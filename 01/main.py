@@ -1,4 +1,6 @@
 from flask import Flask
+from bs4 import BeautifulSoup
+from datetime import datetime
 import requests
 
 app = Flask(__name__)
@@ -38,5 +40,15 @@ def exchange(currency):
             "buy": raw[1],
             "sell": raw[2],
         }
-    # EUR - TODO
+    elif currency == "EUR":
+        URL = "https://cuantoestaeldolar.pe/"
+        data = requests.get(URL)
+        raw = data.text
+        soup = BeautifulSoup(raw, 'html.parser')
+        items = soup.find_all("p", class_="ValueQuotation_text___mR_0")
+        return {
+            "date": datetime.now().strftime("%d/%m/%Y"),
+            "sell": float(items[6].text),
+            "buy": float(items[7].text),
+        }
     return {"message": "NOT FOUND"}, 404
