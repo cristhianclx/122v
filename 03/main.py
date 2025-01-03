@@ -137,6 +137,32 @@ def messages_by_id(id):
     return render_template("messages-details.html", item=data, users=users)
 
 
+@app.route("/messages/<id>/edit/", methods=["GET", "POST"])
+def messages_edit_by_id(id):
+    users = User.query.all()
+    data = Message.query.get_or_404(id)
+    if request.method == "GET":
+        return render_template("messages-edit.html", item=data, users=users)
+    if request.method == "POST":
+        data.title = request.form["title"]
+        data.content = request.form["content"]
+        data.priority = request.form["priority"]
+        data.user_id = request.form["user_id"]
+        db.session.add(data)
+        db.session.commit()
+        return render_template("messages-edit.html", item=data, information="Your changes were saved", users=users)
+
+
+@app.route("/messages/<id>/delete/", methods=["GET", "POST"])
+def messages_delete_by_id(id):
+    data = Message.query.get_or_404(id)
+    if request.method == "GET":
+        return render_template("messages-delete.html", item=data)
+    if request.method == "POST":
+        db.session.delete(data)
+        db.session.commit() 
+        return redirect(url_for('messages'))
+
 # LABORATORIO
 # messages/<id>/edit
 # messages/<id>/delete
