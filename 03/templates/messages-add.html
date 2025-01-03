@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Messages add</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</head>
+  <body>
+    <h1>Messages add</h1>
+    <hr>
+    <a href="{{ url_for('messages') }}" class="btn btn-dark">Return to messages</a>
+    <hr>
+    {% if information %}
+    <div class="alert alert-dark" role="alert">
+      {{ information }}
+    </div>
+    {% endif %}
+    <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-control" name="title" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Content</label>
+            <textarea class="form-control" rows="3" name="content"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Priority</label>
+            <select class="form-select" name="priority">
+                <option value="LOW" selected>LOW</option>
+                <option value="HIGH">HIGH</option>
+              </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">User</label>
+            <select class="form-select" name="user_id">
+                <option value="" selected></option>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                {% endfor %}
+              </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+  </body>
+</html>

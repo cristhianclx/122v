@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.sql import func
@@ -74,11 +74,69 @@ def users_add():
         return render_template("users-add.html", information="Your changes were saved")
 
 
+@app.route("/users/<id>")
+def users_by_id(id):
+    data = User.query.get_or_404(id)
+    return render_template("users-details.html", item=data)
+
+
+@app.route("/users/<id>/edit/", methods=["GET", "POST"])
+def users_edit_by_id(id):
+    data = User.query.get_or_404(id)
+    if request.method == "GET":
+        return render_template("users-edit.html", item=data)
+    if request.method == "POST":
+        data.first_name = request.form["first_name"]
+        data.last_name = request.form["last_name"]
+        data.age = request.form["age"]
+        data.country = request.form["country"]
+        data.city = request.form["city"]
+        db.session.add(data)
+        db.session.commit()
+        return render_template("users-edit.html", item=data, information="Your changes were saved")
+
+
+@app.route("/users/<id>/delete/", methods=["GET", "POST"])
+def users_delete_by_id(id):
+    data = User.query.get_or_404(id)
+    if request.method == "GET":
+        return render_template("users-delete.html", item=data)
+    if request.method == "POST":
+        db.session.delete(data)
+        db.session.commit() 
+        return redirect(url_for('users'))
+
+
+@app.route("/messages/")
+def messages():
+    data = Message.query.all()
+    return render_template("messages.html", items=data)
+
+
+@app.route("/messages/add/", methods=["GET", "POST"])
+def messages_add():
+    users = User.query.all()
+    if request.method == "GET":
+        return render_template("messages-add.html", users=users)
+    if request.method == "POST":
+        item = Message(
+            title=request.form["title"],
+            content=request.form["content"],
+            priority=request.form["priority"],
+            user_id=request.form["user_id"],
+        )
+        db.session.add(item)
+        db.session.commit()
+        return render_template("messages-add.html", information="Your changes were saved", users=users)
+    
+
+@app.route("/messages/<id>")
+def messages_by_id(id):
+    users = User.query.all()
+    data = Message.query.get_or_404(id)
+    return render_template("messages-details.html", item=data, users=users)
+
+
 # LABORATORIO
-# /messages/
-# /messages/add/
-
-
-# R /users/<id> -> read one user
-# U /users/<id>/edit/ -> edit user
-# D /users/<id>/delete/ -> delete user
+# messages/<id>/edit
+# messages/<id>/delete
