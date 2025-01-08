@@ -65,6 +65,7 @@ class UsersResource(Resource):
                 "age": d.age,
                 "country": d.country,
                 "city": d.city,
+                "created_at": d.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             })
         return items
     
@@ -83,17 +84,79 @@ class UsersResource(Resource):
         }, 201
 
 
+class MessagesResource(Resource):
+    def get(self):
+        data = Message.query.all()
+        items = []
+        for d in data:
+            items.append({
+                "id": d.id,
+                "title": d.title,
+                "content": d.content,
+                "priority": d.priority,
+                "user_id": d.user_id,
+            })
+        return items
+
+    def post(self):
+        data = request.get_json()
+        item = Message(**data)
+        db.session.add(item)
+        db.session.commit()
+        return {
+            "id": item.id,
+            "title": item.title,
+            "content": item.content,
+            "priority": item.priority,
+            "user_id": item.user_id,
+        }, 201
+
+
+class UserIDResource(Resource):
+    def get(self, id):
+        item = User.query.get_or_404(id)
+        return {
+            "id": item.id,
+            "first_name": item.first_name,
+            "last_name": item.last_name,
+            "age": item.age,
+            "country": item.country,
+            "city": item.city,
+            "created_at": item.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    
+    def patch(self, id):
+        item = User.query.get_or_404(id)
+        data = request.get_json()
+        item.first_name = data.get("first_name", item.first_name)
+        item.last_name = data.get("last_name", item.last_name)
+        item.age = data.get("age", item.age)
+        item.country = data.get("country", item.country)
+        item.city = data.get("city", item.city)
+        db.session.add(item)
+        db.session.commit()
+        return {
+            "id": item.id,
+            "first_name": item.first_name,
+            "last_name": item.last_name,
+            "age": item.age,
+            "country": item.country,
+            "city": item.city,
+            "created_at": item.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    
+    def delete(self, id):
+        item = User.query.get_or_404(id)
+        db.session.delete(item)
+        db.session.commit()
+        return {}, 204
+
+
 api.add_resource(StatusResource, "/status/")
 api.add_resource(UsersResource, "/users/")
+api.add_resource(UserIDResource, "/users/<int:id>/")
+api.add_resource(MessagesResource, "/messages/")
+
 
 # LABORATORIO
-# /messages/ GET, POST
-
-
-# EP: /users/
-# (x) GET -> [{id, first_name, last_name}, {id, first_name, last_name}], 200
-# (x) POST {first_name, last_name} -> {id, first_name, last_name}, 201
-# EP: /users/<id>/
-# ( ) GET -> {id, first_name, last_name}, 200
-# ( ) PATCH {last_name} -> {id, first_name, last_name}, 200
-# ( ) DELETE -> {}, 204
+# /messages/<id>/ # GET, PATCH, DELETE
