@@ -1,5 +1,7 @@
+beautifulsoup4
 Flask==3.1.0
 Flask-Migrate
 flask-restful
 Flask-SQLAlchemy
+pyspellchecker
 requests
