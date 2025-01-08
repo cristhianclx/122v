@@ -163,6 +163,26 @@ def messages_delete_by_id(id):
         db.session.commit() 
         return redirect(url_for('messages'))
 
-# LABORATORIO
-# messages/<id>/edit
-# messages/<id>/delete
+
+@app.route("/users/<user_id>/messages/add/", methods=["GET", "POST"])
+def add_message_to_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if request.method == "GET":
+        return render_template("users-messages-add.html", user=user)
+    if request.method == "POST":
+        item = Message(
+            title=request.form["title"],
+            content=request.form["content"],
+            priority=request.form["priority"],
+            user_id=user.id,
+        )
+        db.session.add(item)
+        db.session.commit()
+        return render_template("users-messages-add.html", user=user, information="Your changes were saved", users=users)
+
+
+@app.route("/users/<user_id>/messages/")
+def messages_by_user(user_id):
+    user = User.query.get_or_404(user_id)
+    messages = Message.query.filter_by(user = user).all()
+    return render_template("users-messages.html", user=user, messages=messages)

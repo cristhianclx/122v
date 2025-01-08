@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title>Messages add</title>
+<title>Add message to user {{ user.id }}</title>
 {% endblock %}
 
 {% block extra %}
@@ -11,9 +11,9 @@
 {% endblock %}
 
 {% block body %}
-<h1>Messages add</h1>
+<h1>Add message to user {{ user.id }}</h1>
 <hr>
-<a href="{{ url_for('messages') }}" class="btn btn-dark">Return to messages</a>
+<a href="{{ url_for('messages_by_user', user_id=user.id) }}" class="btn btn-dark">Return to messages</a>
 <hr>
 {% if information %}
 <div class="alert alert-dark" role="alert">
@@ -34,15 +34,6 @@
         <select class="form-select" name="priority">
             <option value="LOW" selected>LOW</option>
             <option value="HIGH">HIGH</option>
-          </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">User</label>
-        <select class="form-select" name="user_id">
-            <option value="" selected></option>
-            {% for user in users %}
-            <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
-            {% endfor %}
           </select>
       </div>
       <button type="submit" class="btn btn-primary">Save</button>

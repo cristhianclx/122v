@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title>Messages</title>
+<title>Messages by user {{ user.id }}</title>
 {% endblock %}
 
 {% block body %}
 <h1>Messages</h1>
 <hr>
-<a href="{{ url_for('messages_add') }}" class="btn btn-dark">Add message</a>
+<a href="{{ url_for('add_message_to_user', user_id=user.id) }}" class="btn btn-dark">Add message to user</a>
 <hr>
 <table class="table">
     <thead>
@@ -16,25 +16,17 @@
         <th scope="col">Title</th>
         <th scope="col">Content</th>
         <th scope="col">Priority</th>
-        <th scope="col">User</th>
         <th scope="col">Created at</th> 
-        <th scope="col">Options</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in items %}
+      {% for item in messages %}
       <tr>
         <th scope="row">{{ item.id }}</th>
         <td>{{ item.title }}</td>
         <td>{{ item.content|safe }}</td>
         <td>{{ item.priority }}</td>
-        <td>{{ item.user.first_name }} {{ item.user.last_name }}</td>
         <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-        <td>
-            <a href="{{ url_for('messages_by_id', id=item.id) }}" class="btn btn-info">View</a>
-            <a href="{{ url_for('messages_edit_by_id', id=item.id) }}" class="btn btn-info">Edit</a>
-            <a href="{{ url_for('messages_delete_by_id', id=item.id) }}" class="btn btn-danger">Delete</a>
-        </td>
       </tr>
       {% endfor %}
     </tbody>
