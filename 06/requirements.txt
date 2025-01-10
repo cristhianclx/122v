@@ -1,0 +1,9 @@
+black[jupyter]
+flake8
+Flask==3.1.0
+flask-marshmallow
+Flask-Migrate
+flask-restful-swagger-3
+Flask-SQLAlchemy
+flask-restful
+gunicorn[gevent]

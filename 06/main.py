@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
-from flask_restful import Resource, Api
+from flask_restful_swagger_3 import Resource, Api, swagger, Schema
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 
@@ -26,11 +26,14 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=False)
     country = db.Column(db.String(10), nullable=True)
     city = db.Column(db.String(150), nullable=True)
-    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        server_default=func.now(),
+    )
 
     def __repr__(self):
         return "<User: {}>".format(self.id)
-    
+
 
 class UserSchema(ma.Schema):
     class Meta:
@@ -48,7 +51,7 @@ class UserSchema(ma.Schema):
 
 
 user_schema = UserSchema()
-users_schema = UserSchema(many = True)
+users_schema = UserSchema(many=True)
 
 
 class UserSimpleSchema(ma.Schema):
@@ -63,18 +66,21 @@ class UserSimpleSchema(ma.Schema):
 
 
 user_simple_schema = UserSimpleSchema()
-users_simple_schema = UserSimpleSchema(many = True)
+users_simple_schema = UserSimpleSchema(many=True)
 
 
 class Message(db.Model):
 
     __tablename__ = "messages"
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(50))
     content = db.Column(db.Text)
-    priority = db.Column(db.String(10)) # LOW,HIGH
-    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    priority = db.Column(db.String(10))  # LOW,HIGH
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        server_default=func.now(),
+    )
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship("User", backref="user")
@@ -85,6 +91,7 @@ class Message(db.Model):
 
 class MessageSchema(ma.Schema):
     user = ma.Nested(UserSchema)
+
     class Meta:
         model = Message
         fields = (
@@ -99,7 +106,7 @@ class MessageSchema(ma.Schema):
 
 
 message_schema = MessageSchema()
-messages_schema = MessageSchema(many = True)
+messages_schema = MessageSchema(many=True)
 
 
 class MessageBasicSchema(ma.Schema):
@@ -116,14 +123,12 @@ class MessageBasicSchema(ma.Schema):
 
 
 message_basic_schema = MessageBasicSchema()
-messages_basic_schema = MessageBasicSchema(many = True)
+messages_basic_schema = MessageBasicSchema(many=True)
 
 
 class StatusResource(Resource):
     def get(self):
-        return {
-            "status": "live"
-        }
+        return {"status": "live"}
 
 
 class UsersPublicResource(Resource):
@@ -136,7 +141,7 @@ class UsersResource(Resource):
     def get(self):
         items = User.query.all()
         return users_schema.dump(items)
-    
+
     def post(self):
         data = request.get_json()
         item = User(**data)
@@ -149,7 +154,7 @@ class UserIDResource(Resource):
     def get(self, id):
         item = User.query.get_or_404(id)
         return user_schema.dump(item)
-    
+
     def patch(self, id):
         item = User.query.get_or_404(id)
         data = request.get_json()
@@ -161,7 +166,7 @@ class UserIDResource(Resource):
         db.session.add(item)
         db.session.commit()
         return user_schema.dump(item)
-    
+
     def delete(self, id):
         item = User.query.get_or_404(id)
         db.session.delete(item)
@@ -186,7 +191,7 @@ class MessageIDResource(Resource):
     def get(self, id):
         item = Message.query.get_or_404(id)
         return message_schema.dump(item)
-    
+
     def patch(self, id):
         item = Message.query.get_or_404(id)
         data = request.get_json()
@@ -197,7 +202,7 @@ class MessageIDResource(Resource):
         db.session.add(item)
         db.session.commit()
         return message_schema.dump(item)
-    
+
     def delete(self, id):
         item = Message.query.get_or_404(id)
         db.session.delete(item)
@@ -208,9 +213,9 @@ class MessageIDResource(Resource):
 class UserIDMessagesResource(Resource):
     def get(self, id):
         user = User.query.get_or_404(id)
-        items = Message.query.filter_by(user = user).all()
+        items = Message.query.filter_by(user=user).all()
         return messages_basic_schema.dump(items)
-    
+
     def post(self, id):
         user = User.query.get_or_404(id)
         data = request.get_json()
@@ -228,3 +233,54 @@ api.add_resource(UserIDResource, "/users/<int:id>/")
 api.add_resource(MessagesResource, "/messages/")
 api.add_resource(MessageIDResource, "/messages/<int:id>/")
 api.add_resource(UserIDMessagesResource, "/users/<int:id>/messages/")
+
+
+class EmailModel(Schema):
+    type = "string"
+    format = "email"
+
+
+class KeysModel(Schema):
+    type = "object"
+    properties = {"name": {"type": "string"}}
+
+
+class UserModel(Schema):
+    properties = {
+        "id": {
+            "type": "integer",
+            "format": "int64",
+        },
+        "name": {"type": "string"},
+        "mail": EmailModel,
+        "keys": KeysModel.array(),
+        "user_type": {
+            "type": "string",
+            "enum": ["admin", "regular"],
+            "nullable": True,
+        },
+        "password": {
+            "type": "string",
+            "format": "password",
+            "load_only": True,
+        },
+    }
+    required = ["name"]
+
+
+class UserItemResource(Resource):
+    @swagger.tags(["user"])
+    @swagger.reorder_with(
+        UserModel,
+        description="Returns a user",
+        summary="Get User",
+    )
+    def get(self, user_id):
+        # Do some processing
+        return (
+            UserModel(**{"id": 1, "name": "somebody"}),
+            200,
+        )  # generates json response {"id": 1, "name": "somebody"}
+
+
+api.add_resource(UserItemResource, "/api/users/<int:user_id>")
