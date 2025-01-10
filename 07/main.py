@@ -35,7 +35,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
-        return "<User: {}>".format(self.id)
+        return "<User: {} {}>".format(self.first_name, self.last_name)
     
 
 class UserSchema(ma.Schema):
@@ -162,9 +162,15 @@ def me():
 @app.route("/me/messages/", methods=["GET", "POST"])
 @jwt_required()
 def my_messages():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(first_name=current_user).first()
     if request.method == "GET":
-        # return todos los mensajes asociados al usuario logueado, first_name="cristhian"
-        return []
+        items = Message.query.filter_by(user = user).all()
+        return messages_basic_schema.dump(items)
     if request.method == "POST":
-        # crear un mensaje asociado al usuario first_name="cristhian"
-        return {}
+        data = request.get_json()
+        item = Message(**data)
+        item.user = user
+        db.session.add(item)
+        db.session.commit()
+        return message_basic_schema.dump(item)
