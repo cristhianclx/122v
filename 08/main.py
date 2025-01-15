@@ -23,6 +23,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user = db.Column(db.String(120), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    importance = db.Column(db.String(10), nullable=True, default="LOW")
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
@@ -36,6 +37,7 @@ class MessageSchema(ma.Schema):
             "id",
             "user",
             "content",
+            "importance",
             "created_at",
         )
         datetimeformat = "%Y-%m-%d %H:%M:%S"
@@ -71,9 +73,3 @@ def handle_ws_messages(data):
     db.session.commit()
     raw = message_schema.dump(item)
     socketio.emit("ws-messages-responses", raw)
-
-
-# LABORATORIO
-# model Message: agregar importance (LOW, HIGH)
-# formulario, en la visualizacion
-# OPTIONAL: HIGH rojo

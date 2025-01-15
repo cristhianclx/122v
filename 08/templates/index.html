@@ -15,16 +15,23 @@
             $("#form").on("submit", function(e) {
                 let user = $("#user").val();
                 let content = $("#content").val();
+                let importance = $("#importance").val();
                 socket.emit("ws-messages", {
                     user: user,
                     content: content,
+                    importance: importance,
                 });
                 $("#content").val("").focus();
                 e.preventDefault();
             })
         })
         socket.on("ws-messages-responses", function(item) {
-            $("#messages").append("<p><b>" + item.user + ":</b> " + item.content + "</p>");
+            console.log(item);
+            if (item.importance == "HIGH") {
+                $("#messages").append("<p style='color:red;'><b>" + item.user + ":</b> " + item.content + " (" + item.importance + ")</p>");
+            } else {
+                $("#messages").append("<p><b>" + item.user + ":</b> " + item.content + " (" + item.importance + ")</p>");
+            }
         })
     </script>
 </head>
@@ -40,6 +47,13 @@
             <label class="form-label">Content</label>
             <input type="text" class="form-control" id="content" />
           </div>
+          <div class="mb-3">
+            <label class="form-label">Importance</label>
+            <select class="form-select" id="importance">
+                <option selected value="LOW">LOW</option>
+                <option value="HIGH">HIGH</option>
+              </select>
+            </div>
         <button type="submit" class="btn btn-primary">Send</button>
       </form>
       <hr>
@@ -47,7 +61,11 @@
       <hr>
       <div id="messages">
         {% for item in items %}
-        <p><b>{{ item.user }}:</b> {{ item.content }}</p>
+          {% if item.importance == "HIGH" %}
+          <p style="color:red;"><b>{{ item.user }}:</b> {{ item.content }} {% if item.importance %}({{ item.importance }}){% endif %}</p>
+          {% else %}
+          <p><b>{{ item.user }}:</b> {{ item.content }} {% if item.importance %}({{ item.importance }}){% endif %}</p>
+          {% endif %}
         {% endfor %}
       </div>
   </body>
