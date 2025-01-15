@@ -24,7 +24,7 @@
             })
         })
         socket.on("ws-messages-responses-{{ room.id }}", function(item) {
-            $("#messages").append("<p><b>" + item.user + ":</b> " + item.content + " </p>");
+            $("#messages").append("<p><b>" + item.user + ":</b> " + item.content + " <small>(" + item.created_at + ")</small></p>");
         })
     </script>
 </head>
@@ -47,7 +47,11 @@
       <hr>
       <div id="messages">
         {% for item in items %}
-        <p><b>{{ item.user }}:</b> {{ item.content }}</p>
+          {% if item.is_one_day_before %}
+          <p><b>{{ item.item.user }}:</b> {{ item.item.content }} <small>({{ item.item.created_at.strftime("%Y-%m-%d %H:%M:%S") }})</small></p>
+          {% else %}
+          <p><b>{{ item.item.user }}:</b> {{ item.item.content }} <small>(hace más de un día)</small></p>
+          {% endif %}
         {% endfor %}
       </div>
   </body>
